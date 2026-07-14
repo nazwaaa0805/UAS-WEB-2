@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\WishlistFolder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class FolderController extends Controller
 {
@@ -40,13 +41,28 @@ class FolderController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'type' => ['nullable', 'in:biasa,catatan_belanja'],
             'icon' => ['nullable', 'string', 'max:10'],
+            'photo' => ['nullable', 'image', 'max:4096'],
             'event_date' => ['nullable', 'date'],
         ], [
             'name.required' => 'Nama folder wajib diisi.',
+            'photo.image' => 'File foto harus berupa gambar (jpg, png, dll).',
+            'photo.max' => 'Ukuran foto maksimal 4MB.',
         ]);
 
-        $folder = $request->user()->wishlistFolders()->create($validated);
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('folder-photos', 'public');
+        }
+
+        $folder = $request->user()->wishlistFolders()->create([
+            'name' => $validated['name'],
+            'type' => $validated['type'] ?? 'biasa',
+            'icon' => $validated['icon'] ?? null,
+            'photo_path' => $photoPath,
+            'event_date' => $validated['event_date'] ?? null,
+        ]);
 
         ActivityLog::log('folder', $request->user()->name . ' membuat folder "' . $folder->name . '"');
 
@@ -70,13 +86,38 @@ class FolderController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'type' => ['nullable', 'in:biasa,catatan_belanja'],
             'icon' => ['nullable', 'string', 'max:10'],
+            'photo' => ['nullable', 'image', 'max:4096'],
+            'remove_photo' => ['nullable', 'boolean'],
             'event_date' => ['nullable', 'date'],
         ], [
             'name.required' => 'Nama folder wajib diisi.',
+            'photo.image' => 'File foto harus berupa gambar (jpg, png, dll).',
+            'photo.max' => 'Ukuran foto maksimal 4MB.',
         ]);
 
-        $folder->update($validated);
+        $photoPath = $folder->photo_path;
+
+        if ($request->hasFile('photo')) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+            $photoPath = $request->file('photo')->store('folder-photos', 'public');
+        } elseif ($request->boolean('remove_photo')) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+            $photoPath = null;
+        }
+
+        $folder->update([
+            'name' => $validated['name'],
+            'type' => $validated['type'] ?? 'biasa',
+            'icon' => $validated['icon'] ?? null,
+            'photo_path' => $photoPath,
+            'event_date' => $validated['event_date'] ?? null,
+        ]);
 
         return redirect()->route('folders.index')->with('success', 'Folder berhasil diperbarui.');
     }
@@ -90,6 +131,11 @@ class FolderController extends Controller
         // Item di dalam folder TIDAK ikut terhapus, cuma folder_id-nya jadi null
         // (lihat migration: onDelete('set null'))
         $name = $folder->name;
+
+        if ($folder->photo_path) {
+            Storage::disk('public')->delete($folder->photo_path);
+        }
+
         $folder->delete();
 
         ActivityLog::log('folder', $request->user()->name . ' menghapus folder "' . $name . '"');

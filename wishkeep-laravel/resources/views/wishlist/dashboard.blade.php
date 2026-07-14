@@ -10,7 +10,7 @@
       <a href="{{ route('wishlist.quick-add') }}" class="btn btn-outline">📝 Catatan Belanja</a>
       <a href="{{ route('wishlist.export') }}" class="btn btn-outline">📄 Export CSV</a>
       <a href="{{ route('wishlist.print') }}" target="_blank" class="btn btn-outline">🖨️ Cetak Wishlist</a>
-      <a href="{{ route('wishlist.create') }}" class="btn btn-primary">+ Tambah Item</a>
+      <a href="{{ route('wishlist.create', array_filter(['folder_id' => $filters['folder_id'] ?? null])) }}" class="btn btn-primary">+ Tambah Item</a>
     </div>
   </div>
 
@@ -71,7 +71,7 @@
       <option value="">Semua Folder</option>
       <option value="none" @selected(($filters['folder_id'] ?? '') === 'none')>Tanpa Folder</option>
       @foreach($folders as $f)
-        <option value="{{ $f->id }}" @selected((string) ($filters['folder_id'] ?? '') === (string) $f->id)>{{ $f->icon ? $f->icon.' ' : '' }}{{ $f->name }}</option>
+        <option value="{{ $f->id }}" @selected((string) ($filters['folder_id'] ?? '') === (string) $f->id)>{{ $f->displayName() }}</option>
       @endforeach
     </select>
 
@@ -86,12 +86,6 @@
       <option value="">Semua Status</option>
       <option value="belum" @selected(($filters['status'] ?? '') === 'belum')>Belum Dibeli</option>
       <option value="dibeli" @selected(($filters['status'] ?? '') === 'dibeli')>Sudah Dibeli</option>
-    </select>
-
-    <select name="sort">
-      <option value="">Tampilkan: Semua</option>
-      <option value="belum_dulu" @selected(($filters['sort'] ?? '') === 'belum_dulu')>Tampilkan: Belum Dibeli Saja</option>
-      <option value="dibeli_dulu" @selected(($filters['sort'] ?? '') === 'dibeli_dulu')>Tampilkan: Sudah Dibeli Saja</option>
     </select>
 
     <button type="submit" class="btn btn-outline btn-sm">Terapkan</button>
@@ -191,7 +185,7 @@
             <select id="move-folder-{{ $item->id }}" name="folder_id" onchange="this.form.submit()">
               <option value="" @selected(!$item->folder_id)>Tanpa Folder</option>
               @foreach($folders as $f)
-                <option value="{{ $f->id }}" @selected($item->folder_id === $f->id)>{{ $f->icon ? $f->icon.' ' : '' }}{{ $f->name }}</option>
+                <option value="{{ $f->id }}" @selected($item->folder_id === $f->id)>{{ $f->displayName() }}</option>
               @endforeach
             </select>
           </form>

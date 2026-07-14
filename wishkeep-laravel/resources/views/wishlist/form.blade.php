@@ -28,14 +28,11 @@
 
       <label for="saved_amount">Sudah Menabung (Rp) — opsional</label>
       <input type="number" id="saved_amount" name="saved_amount" min="0" step="1000" value="{{ old('saved_amount', $item->saved_amount ?? 0) }}">
-      <p style="font-size:.76rem; color:var(--ink-dim); margin-top:4px; margin-bottom:0;">
-        Nanti bisa ditambah bertahap lewat tombol "+ Nabung" di dashboard.
-      </p>
 
       <label for="target_date">Target Tanggal Beli (opsional)</label>
       <input type="date" id="target_date" name="target_date" value="{{ old('target_date', $item?->target_date?->format('Y-m-d') ?? '') }}">
       <p style="font-size:.76rem; color:var(--ink-dim); margin-top:4px; margin-bottom:0;">
-        Kalau diisi, akan muncul reminder di dashboard saat tanggalnya sudah dekat (H-7).
+        Jika diisi, akan muncul reminder di dashboard saat tanggalnya sudah dekat (H-7).
       </p>
 
       <label for="link">Tautan Produk (opsional)</label>
@@ -48,15 +45,12 @@
           <option value="{{ $c->id }}" @selected($item && (string) $item->category_id === (string) $c->id)>{{ $c->name }}</option>
         @endforeach
       </select>
-      <p style="font-size:.76rem; margin-top:4px; margin-bottom:0;">
-        Gak ada kategori yang cocok? Tambah di bawah form ini ⬇️
-      </p>
 
       <label for="folder_id">Folder (opsional)</label>
       <select id="folder_id" name="folder_id">
         <option value="">Tanpa Folder</option>
         @foreach($folders as $f)
-          <option value="{{ $f->id }}" @selected((string) ($selectedFolderId ?? '') === (string) $f->id)>{{ $f->icon ? $f->icon.' ' : '' }}{{ $f->name }}</option>
+          <option value="{{ $f->id }}" @selected((string) ($selectedFolderId ?? '') === (string) $f->id)>{{ $f->displayName() }}</option>
         @endforeach
       </select>
 

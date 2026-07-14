@@ -37,14 +37,7 @@ class WishlistController extends Controller
             }
         }
 
-        $sort = $request->query('sort');
-        if ($sort === 'belum_dulu') {
-            $query->where('status', 'belum')->orderByDesc('created_at');
-        } elseif ($sort === 'dibeli_dulu') {
-            $query->where('status', 'dibeli')->orderByDesc('created_at');
-        } else {
-            $query->orderByDesc('created_at');
-        }
+        $query->orderByDesc('created_at');
 
         $items = $query->get();
 
@@ -74,7 +67,7 @@ class WishlistController extends Controller
             'items' => $items,
             'categories' => Category::where('status', 'approved')->orderBy('name')->get(),
             'folders' => $request->user()->wishlistFolders()->orderBy('name')->get(),
-            'filters' => $request->only(['q', 'status', 'priority', 'category_id', 'folder_id', 'sort']),
+            'filters' => $request->only(['q', 'status', 'priority', 'category_id', 'folder_id']),
             'stats' => $stats,
             'upcomingReminders' => $upcomingReminders,
             'upcomingItemReminders' => $upcomingItemReminders,
@@ -195,7 +188,7 @@ class WishlistController extends Controller
     public function destroy(Request $request, WishlistItem $wishlist)
     {
         if ($wishlist->user_id !== $request->user()->id) {
-            return redirect()->route('dashboard')->with('error', 'Item tidak ditemukan.');
+            return redirect()->back()->with('error', 'Item tidak ditemukan.');
         }
 
         $title = $wishlist->title;
@@ -203,14 +196,14 @@ class WishlistController extends Controller
 
         ActivityLog::log('delete', $request->user()->name . ' menghapus item "' . $title . '"');
 
-        return redirect()->route('dashboard')->with('success', 'Item wishlist berhasil dihapus.');
+        return redirect()->back()->with('success', 'Item wishlist berhasil dihapus.');
     }
 
     // ===== TOGGLE STATUS CEPAT (belum <-> dibeli) =====
     public function toggleStatus(Request $request, WishlistItem $wishlist)
     {
         if ($wishlist->user_id !== $request->user()->id) {
-            return redirect()->route('dashboard')->with('error', 'Item tidak ditemukan.');
+            return redirect()->back()->with('error', 'Item tidak ditemukan.');
         }
 
         $wishlist->update([
@@ -220,14 +213,14 @@ class WishlistController extends Controller
         $statusText = $wishlist->status === 'dibeli' ? 'sudah dibeli' : 'belum dibeli';
         ActivityLog::log('toggle', $request->user()->name . ' menandai "' . $wishlist->title . '" sebagai ' . $statusText);
 
-        return redirect()->route('dashboard');
+        return redirect()->back();
     }
 
     // ===== PINDAH FOLDER CEPAT (dari dashboard, tanpa buka form edit penuh) =====
     public function moveFolder(Request $request, WishlistItem $wishlist)
     {
         if ($wishlist->user_id !== $request->user()->id) {
-            return redirect()->route('dashboard')->with('error', 'Item tidak ditemukan.');
+            return redirect()->back()->with('error', 'Item tidak ditemukan.');
         }
 
         $validated = $request->validate([
@@ -243,7 +236,7 @@ class WishlistController extends Controller
                 ->first();
 
             if (! $folder) {
-                return redirect()->route('dashboard')->with('error', 'Folder tidak ditemukan.');
+                return redirect()->back()->with('error', 'Folder tidak ditemukan.');
             }
 
             $folderName = $folder->icon ? $folder->icon . ' ' . $folder->name : $folder->name;
@@ -253,7 +246,7 @@ class WishlistController extends Controller
 
         ActivityLog::log('move', $request->user()->name . ' memindahkan "' . $wishlist->title . '" ke folder "' . $folderName . '"');
 
-        return redirect()->route('dashboard')->with('success', 'Item dipindahkan ke "' . $folderName . '".');
+        return redirect()->back()->with('success', 'Item dipindahkan ke "' . $folderName . '".');
     }
 
     // ===== CATATAN BELANJA (form tambah beberapa barang kecil sekaligus) =====
@@ -316,7 +309,7 @@ class WishlistController extends Controller
     public function addSaving(Request $request, WishlistItem $wishlist)
     {
         if ($wishlist->user_id !== $request->user()->id) {
-            return redirect()->route('dashboard')->with('error', 'Item tidak ditemukan.');
+            return redirect()->back()->with('error', 'Item tidak ditemukan.');
         }
 
         $validated = $request->validate([
@@ -339,7 +332,7 @@ class WishlistController extends Controller
             ? 'Yeay, tabungan untuk "' . $wishlist->title . '" sudah mencapai target! 🎉'
             : 'Tabungan berhasil ditambahkan.';
 
-        return redirect()->route('dashboard')->with('success', $message);
+        return redirect()->back()->with('success', $message);
     }
 
     // ===== FITUR CETAK (PRINT) =====

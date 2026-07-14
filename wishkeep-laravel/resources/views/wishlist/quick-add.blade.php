@@ -5,9 +5,7 @@
     <div class="eyebrow">Perintilan &amp; Belanja Kecil</div>
     <h1>📝 Catatan Belanja</h1>
     <p class="sub" style="margin:6px 0 0 0;">
-      Buat catatan singkat untuk barang-barang kecil (bahan makanan, alat tulis, dll) —
-      isi nama &amp; jumlahnya, harga boleh dikosongkan. Semua baris yang terisi
-      langsung jadi item wishlist.
+      Catatan singkat untuk barang-barang kecil.
     </p>
   </div>
 </div>
@@ -22,12 +20,12 @@
         <select id="folder_id" name="folder_id">
           <option value="">Tanpa Folder</option>
           @foreach($folders as $f)
-            <option value="{{ $f->id }}" @selected((string) ($selectedFolderId ?? '') === (string) $f->id)>{{ $f->icon ? $f->icon.' ' : '' }}{{ $f->name }}</option>
+            <option value="{{ $f->id }}" @selected((string) ($selectedFolderId ?? '') === (string) $f->id)>{{ $f->displayName() }}</option>
           @endforeach
         </select>
       </div>
       <div style="flex:1; min-width:220px;">
-        <label for="category_id">Kategori (opsional, berlaku untuk semua baris)</label>
+        <label for="category_id">Kategori (opsional)</label>
         <select id="category_id" name="category_id">
           <option value="">Tanpa Kategori</option>
           @foreach($categories as $c)
@@ -61,11 +59,6 @@
         </tbody>
       </table>
     </div>
-
-    <p style="font-size:.8rem; color:var(--ink-dim); margin:8px 0 0 0;">
-      Kolom Jumlah boleh diisi angka biasa (mis. <b>3</b>) atau kalimat singkat (mis. <b>2 lusin</b>, <b>12 buah</b>, <b>1 pack</b>).
-      Untuk perhitungan Total, angka di depan tulisan itu yang dipakai — sisanya cuma buat kamu.
-    </p>
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; flex-wrap:wrap; gap:10px;">
       <button type="button" id="qa-add-row" class="btn btn-outline btn-sm">+ Tambah Baris</button>

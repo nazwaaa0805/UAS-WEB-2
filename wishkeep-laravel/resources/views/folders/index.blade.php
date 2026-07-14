@@ -22,10 +22,18 @@
       @foreach($folders as $folder)
         @php $daysLeft = $folder->daysUntilEvent(); @endphp
         <div class="wish-card">
+          @if($folder->photo_path)
+            <img src="{{ $folder->photoUrl() }}" alt="Tema folder {{ $folder->name }}" class="card-photo">
+          @endif
           <div class="top-row">
             <div>
               <div class="cat">{{ $folder->items_count }} item</div>
-              <h3>{{ $folder->icon ? $folder->icon.' ' : '' }}{{ $folder->name }}</h3>
+              <h3>
+                {{ $folder->icon ? $folder->icon.' ' : '' }}{{ $folder->name }}
+                @if($folder->isCatatanBelanja())
+                  <span class="folder-type-badge" title="Folder Catatan Belanja">C</span>
+                @endif
+              </h3>
             </div>
             @if($daysLeft !== null)
               <span class="priority-tag priority-{{ $daysLeft <= 7 ? 'high' : ($daysLeft <= 30 ? 'medium' : 'low') }}">
@@ -45,7 +53,7 @@
 
           <div class="actions">
             <a href="{{ route('dashboard', ['folder_id' => $folder->id]) }}" class="btn btn-outline btn-sm">Lihat Item</a>
-            <a href="{{ route('wishlist.create', ['folder_id' => $folder->id]) }}" class="btn btn-outline btn-sm">+ Tambah Item</a>
+            <a href="{{ route('dashboard', ['folder_id' => $folder->id, 'status' => 'dibeli']) }}" class="btn btn-outline btn-sm">✅ Sudah Dibeli</a>
             <a href="{{ route('wishlist.quick-add', ['folder_id' => $folder->id]) }}" class="btn btn-outline btn-sm">📝 Catatan</a>
             <a href="{{ route('folders.edit', $folder) }}" class="btn btn-outline btn-sm">Edit</a>
             <form action="{{ route('folders.delete', $folder) }}" method="POST" onsubmit="return confirm('Hapus folder ini? Item di dalamnya tidak akan terhapus, hanya dipindah ke Tanpa Folder.');">
